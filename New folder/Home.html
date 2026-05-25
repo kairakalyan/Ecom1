@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopping Store</title>
+
+  <!-- Bootstrap & FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/469095c214.js" crossorigin="anonymous"></script>
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      padding-top: 150px;
+      overflow-x: hidden;
+    }
+
+    .product-image-container {
+      width: 100%;
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .product-image-container img {
+      max-height: 100%;
+      max-width: 100%;
+    }
+
+    .product-card {
+      min-width: 220px;
+      max-width: 220px;
+      height: fit-content;
+      flex: 0 0 auto;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .product-card:hover {
+      transform: scale(1.03);
+    }
+
+    .scroll-row-wrapper {
+      position: relative;
+    }
+
+    .scroll-row {
+      display: flex;
+      gap: 1rem;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      padding: 0 1rem;
+    }
+
+    .logo-img {
+      height: 40px;
+      align-items: center;
+    }
+
+    .category-circle img {
+      width: 110px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #ddd;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .category-circle {
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.75rem;
+      flex: 0 0 auto;
+      width: 120px;
+    }
+
+    .category-circle img:hover {
+      transform: scale(1.1);
+      border-color: #007bff;
+    }
+
+    .category-circle p {
+      margin-top: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    #categoryScroll {
+      padding: 0.5rem 1rem;
+      scrollbar-width: thin;
+    }
+
+    #categoryScroll::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    #categoryScroll::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 10px;
+    }
+
+    .category-bar {
+      top: 66px;
+      z-index: 1030;
+    }
+
+    .mt-3 {
+      margin-top: 8rem !important;
+    }
+
+    .row > * {
+      margin-left: 2px;
+      margin-right: 6px;
+      margin-top: 5px;
+      margin-bottom: 2rem;
+    }
+
+    /* Carousel-style buttons */
+    .carousel-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 1.5rem;
+      line-height: 40px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .carousel-button.prev { left: 10px; }
+    .carousel-button.next { right: 10px; }
+
+    .carousel-button:hover {
+      background: rgba(0,0,0,0.7);
+    }
+
+    .container-fluid h5 {
+      padding-left: 50px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Fixed Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3 fixed-top">
+    <div class="container-fluid px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-light rounded-circle p-2" onclick="displayAllCategories()" title="Home">
+          <i class="fa fa-home"></i>
+        </button>
+        <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+          <img src="C:/Users/Kalyan/Desktop/logo11.png" alt="Logo" class="logo-img rounded-circle bg-white p-1" />
+          <span class="fw-bold fs-5">Kaira Flavors</span>
+        </a>
+      </div>
+
+      <form class="d-flex gap-2 align-items-center flex-wrap flex-grow-1">
+        <select class="form-select rounded-pill" style="width: 140px;" id="categoryDropdown">
+          <option value="">All</option>
+        </select>
+        <div class="input-group" style="width: 300px;">
+          <input type="text" class="form-control rounded-start-pill" placeholder="Search products..." id="searchBar">
+          <span class="input-group-text bg-primary text-white rounded-end-pill">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </span>
+        </div>
+      </form>
+
+      <div class="ms-3">
+        <a href="login.html" class="btn btn-outline-light rounded-pill px-4">Sign In</a>
+      </div>
+      <div class="ms-2">
+        <a href="cart.html" class="btn btn-outline-warning position-relative rounded-pill px-3">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="count">0</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ✅ Dynamic Category Scroll Section -->
+  <div class="bg-white shadow-sm py-2 position-fixed w-100 category-bar">
+    <div id="categoryScroll" class="d-flex align-items-center overflow-auto gap-3 px-3">
+      <!-- Dynamic categories here -->
+    </div>
+  </div>
+
+  <!-- ✅ Product Display Section -->
+  <div class="container-fluid px-3 mt-3 mb-5" id="root"></div>
+
+  <!-- JS Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    let products = JSON.parse(localStorage.getItem("storeProducts")) || [];
+    let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+    function updateCartCount() {
+      document.getElementById("count").innerText = cart.length;
+    }
+
+    function getCategories() {
+      const categories = [...new Set(products.map(p => p.category))];
+      return categories;
+    }
+
+    function renderCategoryScroll() {
+      const container = document.getElementById("categoryScroll");
+      const dropdown = document.getElementById("categoryDropdown");
+      container.innerHTML = "";
+      dropdown.innerHTML = `<option value="">All</option>`;
+
+      getCategories().forEach(category => {
+        const div = document.createElement("div");
+        div.className = "category-circle";
+        div.innerHTML = `
+          <img src="${products.find(p => p.category === category).image}" alt="${category}">
+          <p>${category}</p>
+        `;
+        div.onclick = () => filterByCategory(category);
+        container.appendChild(div);
+
+        const option = document.createElement("option");
+        option.value = category;
+        option.innerText = category;
+        dropdown.appendChild(option);
+      });
+    }
+
+    function productCard(item) {
+      return `
+        <div class="card product-card shadow-sm">
+          <div class="product-image-container">
+            <img src="${item.image}" class="img-fluid" alt="${item.title}">
+          </div>
+          <div class="card-body text-center">
+            <h6 class="card-title">${item.title}</h6>
+            <p class="fw-bold text-success">₹ ${item.price}.00</p>
+            <button class="btn btn-dark btn-sm w-100" onclick="addToCart(${item.id})">
+              <i class="fa-solid fa-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function displayAllCategories() {
+      const container = document.getElementById("root");
+      container.innerHTML = "";
+      getCategories().forEach((category, index) => {
+        const categoryItems = products.filter(p => p.category === category);
+        const rowId = `scroll-row-${index}`;
+        const section = document.createElement("div");
+        section.innerHTML = `
+          <h5 class="fw-bold mb-3">${category}</h5>
+          <div class="scroll-row-wrapper mb-5">
+            <button class="carousel-button prev" onclick="moveSlide('${rowId}', -1)">&#10094;</button>
+            <div id="${rowId}" class="scroll-row">
+              ${categoryItems.map(productCard).join('')}
+            </div>
+            <button class="carousel-button next" onclick="moveSlide('${rowId}', 1)">&#10095;</button>
+          </div>
+        `;
+        container.appendChild(section);
+      });
+    }
+
+    function moveSlide(rowId, direction) {
+      const row = document.getElementById(rowId);
+      const item = row.querySelector('.product-card');
+      const itemWidth = item.offsetWidth + 16;
+      let currentScroll = row.scrollLeft;
+      row.scrollTo({
+        left: currentScroll + direction * itemWidth * 2,
+        behavior: 'smooth'
+      });
+    }
+
+    function filterByCategory(category) {
+      if (!category) {
+        displayAllCategories();
+        return;
+      }
+      const filtered = products.filter(item => item.category === category);
+      const container = document.getElementById("root");
+      container.innerHTML = `
+        <h5 class="fw-bold mb-3">${category}</h5>
+        <div class="row">
+          ${filtered.map(productCard).join('')}
+        </div>
+      `;
+    }
+
+    document.getElementById("searchBar").addEventListener("keyup", (e) => {
+      const value = e.target.value.toLowerCase();
+      const filtered = products.filter(item => item.title.toLowerCase().includes(value));
+      const container = document.getElementById("root");
+      container.innerHTML = `
+        <div class="row">
+          ${filtered.map(productCard).join('')}
+        </div>
+      `;
+    });
+
+    function addToCart(id) {
+      const selected = products.find(p => p.id === id);
+      if (selected) {
+        cart.push({ ...selected });
+        localStorage.setItem("shoppingCart", JSON.stringify(cart));
+        updateCartCount();
+      }
+    }
+
+    window.onload = () => {
+      renderCategoryScroll();
+      displayAllCategories();
+      updateCartCount();
+    };
+  </script>
+</body>
+</html>
